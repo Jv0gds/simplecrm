@@ -1,10 +1,13 @@
 {
   "name": "simplecrm",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Simple CRM for Small Businesses",
+  "main": "index.html",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -13,12 +16,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Jv0gds/simplecrm/issues"
   },
   "homepage": "https://github.com/Jv0gds/simplecrm#readme",
   "devDependencies": {
-    "vite": "^7.3.1"
+    "vite": "^6.0.0"
   }
 }
