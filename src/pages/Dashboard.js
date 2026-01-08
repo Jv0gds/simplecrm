@@ -1,97 +1,66 @@
+// src/pages/Dashboard.js 
 // src/pages/Dashboard.js
 import { renderSidebar } from '../components/Sidebar.js';
-import { renderCatalog } from './Catalog.js'; // 复用目录页
+import { renderCatalog } from './Catalog.js';
 
-export function renderDashboard(container, currentUser) {
-  // 1. 渲染整体布局 (Sidebar + Empty Main Content)
+export function renderDashboard(container, currentUser, onLoginRequest) {
+  // 1) 渲染侧边栏（返回的是 HTML 字符串），并创建主内容区
+  const sidebarHtml = renderSidebar(currentUser ? currentUser.role : null);
+
   container.innerHTML = `
     <div class="dashboard-layout">
-      ${renderSidebar(currentUser.role)}
-      <main class="main-content" id="mainContent">
-        </main>
+      ${sidebarHtml}
+      <main id="mainContent" class="main-content"></main>
     </div>
   `;
 
-  const mainContent = document.getElementById('mainContent');
-
-  // 2. 定义页面加载逻辑
-  function loadPage(pageName) {
-    mainContent.innerHTML = ''; // 清空当前内容
-
-    switch (pageName) {
-      case 'home':
-        renderHome(mainContent, currentUser);
-        break;
-      case 'catalog':
-        // 复用 Catalog 组件，但传入 currentUser，这样它就知道隐藏登录按钮
-        renderCatalog(mainContent, null, currentUser);
-        break;
-      case 'leads':
-        mainContent.innerHTML = '<h2>🎯 Leads Management</h2><p>Coming soon...</p>';
-        break;
-      case 'pipeline':
-        mainContent.innerHTML = '<h2>🚀 Sales Pipeline</h2><p>Coming soon...</p>';
-        break;
-      case 'admin':
-        if (currentUser.role === 'admin') {
-           mainContent.innerHTML = '<h2>⚙️ Admin Panel</h2><p>User management goes here.</p>';
-        } else {
-           mainContent.innerHTML = '<h2 style="color:red">⛔ Access Denied</h2><p>You do not have permission to view this page.</p>';
-        }
-        break;
-      default:
-        renderHome(mainContent, currentUser);
-    }
-  }
-
-  // 3. 绑定侧边栏点击事件
-  document.querySelectorAll('#navLinks a').forEach(link => {
+  // 2) 导航链接绑定（使用容器范围内的查询，保证元素已存在）
+  const navLinks = container.querySelectorAll('#navLinks a[data-page]');
+  navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
-      e.preventDefault(); // 阻止链接默认跳转
-      const page = e.target.dataset.page;
+      e.preventDefault();
+      const page = link.getAttribute('data-page');
       loadPage(page);
     });
   });
 
-  // 4. 绑定注销事件
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    // 简单刷新页面来注销 (或者调用回调清理状态)
-    window.location.reload();
-  });
+  // 3) 安全地绑定注销事件：优先在容器范围查找，避免 null.addEventListener 抛错
+  const logoutBtn = container.querySelector('#logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      // 刷新页面以触发 init 流程（会回到登录或游客视图）
+      window.location.reload();
+    });
+  } else {
+    console.warn('[renderDashboard] logoutBtn 未找到，无法绑定注销事件。');
+  }
 
-  // 5. 默认加载 Home
+  // 4) 页面加载器（可扩展更多页面）
+  function loadPage(page) {
+    const main = container.querySelector('#mainContent');
+    switch (page) {
+      case 'home':
+        main.innerHTML = renderHome(currentUser);
+        break;
+      case 'catalog':
+        // 渲染现有的 Catalog 模块，传入 onLoginRequest 和 currentUser
+        renderCatalog(main, onLoginRequest || (() => {}), currentUser);
+        break;
+      default:
+        main.innerHTML = `<h2>${page}</h2><p>尚未实现的页面。</p>`;
+    }
+  }
+
+  // 5) 默认打开 Home
   loadPage('home');
 }
 
-// 内部小组件：Dashboard 首页
-function renderHome(container, user) {
-  container.innerHTML = `
-    <header>
-      <h1>Welcome back, ${user.login}!</h1>
-      <p style="color:#666;">Role: <span class="tag">${user.role}</span></p>
-    </header>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
-      <div class="card">
-        <h3>My Leads</h3>
-        <p style="font-size: 2rem; font-weight: bold; color: #007bff;">12</p>
-      </div>
-      <div class="card">
-        <h3>Open Tasks</h3>
-        <p style="font-size: 2rem; font-weight: bold; color: #28a745;">5</p>
-      </div>
-      <div class="card">
-        <h3>Pipeline Value</h3>
-        <p style="font-size: 2rem; font-weight: bold; color: #ffc107;">$45k</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Recent Activity</h3>
-      <ul style="padding-left: 20px; color: #555;">
-        <li>Logged in successfully.</li>
-        <li>Checked public catalog.</li>
-      </ul>
+function renderHome(user) {
+  return `
+    <div class="dashboard-home" style="padding:1.5rem;">
+      <h1>Welcome ${user ? user.login : 'Guest'}</h1>
+      <p style="color:#666;">Use the sidebar to navigate the app.</p>
     </div>
   `;
 }
