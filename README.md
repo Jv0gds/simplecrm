@@ -1,13 +1,19 @@
 # simplecrm
-Simple CRM for Small Businesses
-A system to manage leads, contacts, follow-ups, and sales pipeline stages.
+## Simple CRM for Small Businesses
+- Visitor: can browse public pages and discover content; cannot create or modify records.
+- Registered user: can create and manage their own records; can participate in collaboration and workflows.
+- Sales Rep: domain-specific permissions to manage workflow steps and relevant content.
+- Sales Manager: domain-specific permissions to manage workflow steps and relevant content.
+- Admin: full access; manages users and reference data; can moderate and resolve conflicts.
 
-leads
-pipeline
-contacts
-activities
-stages
-reports
+## Business objects
+- Lead
+- Contact
+- Company
+- Pipeline Stage
+- Activity
+- Deal
+- Note
 roles
 workflow
 notifications
